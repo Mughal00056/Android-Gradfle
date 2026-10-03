@@ -2,7 +2,7 @@ import React from 'react';
 import { 
   Play, Hammer, Terminal, Smartphone, Settings, 
   Menu, ChevronDown, Plus, Eye, Columns, Code2, 
-  Layers, Sparkles, Home 
+  Layers, Sparkles, Home, Download, Trash2 
 } from 'lucide-react';
 import { Project, ViewMode } from '../types';
 
@@ -18,6 +18,8 @@ interface TopBarProps {
   onToggleExplorer: () => void;
   onOpenHome: () => void;
   onNewProject: () => void;
+  onDownloadProject: () => void;
+  onDeleteCurrentProject: () => void;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -32,6 +34,8 @@ export const TopBar: React.FC<TopBarProps> = ({
   onToggleExplorer,
   onOpenHome,
   onNewProject,
+  onDownloadProject,
+  onDeleteCurrentProject,
 }) => {
   return (
     <header className="shrink-0 h-12 bg-[#121317] border-b border-white/10 px-2 sm:px-3 flex items-center justify-between gap-2 select-none z-30">
@@ -47,7 +51,7 @@ export const TopBar: React.FC<TopBarProps> = ({
 
         <button
           onClick={onOpenHome}
-          title="Home / Welcome Screen"
+          title="Home / Welcome Setup Screen"
           className="flex items-center gap-1.5 px-2 py-1 rounded-lg bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 font-mono text-xs font-bold border border-sky-500/20 transition-colors"
         >
           <span>&#123;🤖&#125;</span>
@@ -66,7 +70,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               }
             }}
             aria-label="Select Active Project"
-            className="bg-[#1A1C24] hover:bg-[#222530] text-slate-100 font-mono text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-white/10 outline-none cursor-pointer pr-7 transition-colors truncate max-w-[130px] sm:max-w-[180px]"
+            className="bg-[#1A1C24] hover:bg-[#222530] text-slate-100 font-mono text-xs font-semibold px-2.5 py-1.5 rounded-lg border border-white/10 outline-none cursor-pointer pr-7 transition-colors truncate max-w-[120px] sm:max-w-[170px]"
           >
             {projects.map((p) => (
               <option key={p.id} value={p.id}>
@@ -77,6 +81,31 @@ export const TopBar: React.FC<TopBarProps> = ({
           </select>
           <ChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2 pointer-events-none" />
         </div>
+
+        {/* Project Download ZIP button */}
+        <button
+          onClick={onDownloadProject}
+          title={`Download ${currentProject.name} (ZIP)`}
+          className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-sky-400 hover:text-sky-300 border border-white/5 transition-colors hidden sm:flex items-center gap-1 text-xs font-medium"
+        >
+          <Download className="w-3.5 h-3.5" />
+          <span className="hidden lg:inline text-[11px]">Download ZIP</span>
+        </button>
+
+        {/* Project Delete button */}
+        {projects.length > 1 && (
+          <button
+            onClick={() => {
+              if (confirm(`Delete project "${currentProject.name}"?`)) {
+                onDeleteCurrentProject();
+              }
+            }}
+            title="Delete this project"
+            className="p-1.5 rounded-lg hover:bg-red-500/20 text-slate-400 hover:text-red-400 transition-colors hidden md:flex items-center"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </button>
+        )}
       </div>
 
       {/* Zone 2: Workspace View Mode Switcher (Editor / Split / Preview / Terminal) */}

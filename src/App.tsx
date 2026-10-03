@@ -7,6 +7,7 @@ import {
   findFileById, findFileByPath, updateFileContent, 
   addFileToDirectory, deleteFileById, renameFileById, getFileLanguage 
 } from './utils/fileUtils';
+import { downloadProjectAsZip } from './utils/zipUtils';
 import { TopBar } from './components/TopBar';
 import { ProjectExplorer } from './components/ProjectExplorer';
 import { CodeEditor } from './components/CodeEditor';
@@ -25,12 +26,15 @@ export default function App() {
   const [showExplorer, setShowExplorer] = useState(true);
   const [sdkConfig, setSdkConfig] = useState<SdkConfig>(DEFAULT_SDK_CONFIG);
 
+  // Setup / Welcome launcher starts OPEN first (as requested: "pahla se project open na ho ok pahla create kara ok")
+  const [hasCompletedInitialSetup, setHasCompletedInitialSetup] = useState(false);
+  const [showWelcomeScreen, setShowWelcomeScreen] = useState(true);
+
   // Modals state
   const [showPropertiesModal, setShowPropertiesModal] = useState(false);
   const [showBuildModal, setShowBuildModal] = useState(false);
   const [showInstallerModal, setShowInstallerModal] = useState(false);
   const [showNewProjectModal, setShowNewProjectModal] = useState(false);
-  const [showWelcomeScreen, setShowWelcomeScreen] = useState(false);
 
   const currentProject = projects.find((p) => p.id === currentProjectId) || projects[0];
 
@@ -156,6 +160,28 @@ export default function App() {
     );
   };
 
+  // Delete project
+  const handleDeleteProject = (projectIdToDelete: string) => {
+    if (projects.length <= 1) {
+      alert('Cannot delete the only project in workspace.');
+      return;
+    }
+    const remaining = projects.filter((p) => p.id !== projectIdToDelete);
+    setProjects(remaining);
+    if (currentProjectId === projectIdToDelete) {
+      setCurrentProjectId(remaining[0].id);
+    }
+  };
+
+  // Download project as ZIP
+  const handleDownloadProject = async (proj: Project) => {
+    try {
+      await downloadProjectAsZip(proj);
+    } catch (err) {
+      console.error('Failed to download project zip', err);
+    }
+  };
+
   // Save SDK Config & update files
   const handleSaveSdkConfig = (updated: SdkConfig) => {
     setSdkConfig(updated);
@@ -220,6 +246,7 @@ cmake.dir=${updated.cmakeDir}`;
 
     setProjects([...projects, newProj]);
     setCurrentProjectId(newProjId);
+    setShowWelcomeScreen(false);
     setViewMode('split');
   };
 
@@ -238,6 +265,8 @@ cmake.dir=${updated.cmakeDir}`;
         onToggleExplorer={() => setShowExplorer(!showExplorer)}
         onOpenHome={() => setShowWelcomeScreen(true)}
         onNewProject={() => setShowNewProjectModal(true)}
+        onDownloadProject={() => handleDownloadProject(currentProject)}
+        onDeleteCurrentProject={() => handleDeleteProject(currentProject.id)}
       />
 
       {/* Main Workspace Layout */}
@@ -347,8 +376,7 @@ cmake.dir=${updated.cmakeDir}`;
       <BuildModal
         isOpen={showBuildModal}
         onClose={() => setShowBuildModal(false)}
-        projectName={currentProject.name}
-        packageName={currentProject.packageName}
+        project={currentProject}
         config={sdkConfig}
         onInstallApk={() => {
           setShowBuildModal(false);
@@ -373,7 +401,7 @@ cmake.dir=${updated.cmakeDir}`;
         onCreateProject={handleCreateProject}
       />
 
-      {/* Android Code Studio Welcome Hub Modal */}
+      {/* Android Code Studio Setup Onboarding & Hub Modal */}
       <WelcomeScreen
         isOpen={showWelcomeScreen}
         onClose={() => setShowWelcomeScreen(false)}
@@ -381,9 +409,13 @@ cmake.dir=${updated.cmakeDir}`;
         currentProjectId={currentProjectId}
         onSelectProject={setCurrentProjectId}
         onNewProject={() => setShowNewProjectModal(true)}
+        onDeleteProject={handleDeleteProject}
+        onDownloadProject={handleDownloadProject}
         onOpenProperties={() => setShowPropertiesModal(true)}
         onOpenTerminal={() => setViewMode('terminal')}
         onOpenLivePreview={() => setViewMode('preview')}
+        isInitialSetup={!hasCompletedInitialSetup}
+        onFinishInitialSetup={() => setHasCompletedInitialSetup(true)}
       />
     </div>
   );

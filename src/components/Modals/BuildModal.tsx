@@ -4,13 +4,13 @@ import {
   Smartphone, Share2, Terminal, Copy, Check, Play, Sparkles 
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { SdkConfig } from '../../types';
+import { SdkConfig, Project } from '../../types';
+import { downloadApkFile } from '../../utils/zipUtils';
 
 interface BuildModalProps {
   isOpen: boolean;
   onClose: () => void;
-  projectName: string;
-  packageName: string;
+  project: Project;
   config: SdkConfig;
   onInstallApk: () => void;
   onOpenLivePreview: () => void;
@@ -19,8 +19,7 @@ interface BuildModalProps {
 export const BuildModal: React.FC<BuildModalProps> = ({
   isOpen,
   onClose,
-  projectName,
-  packageName,
+  project,
   config,
   onInstallApk,
   onOpenLivePreview,
@@ -29,6 +28,10 @@ export const BuildModal: React.FC<BuildModalProps> = ({
   const [progress, setProgress] = useState(0);
   const [logs, setLogs] = useState<string[]>([]);
   const [copied, setCopied] = useState(false);
+  const [downloading, setDownloading] = useState(false);
+
+  const projectName = project.name;
+  const packageName = project.packageName;
 
   const startBuild = () => {
     setStage('building');
@@ -85,19 +88,15 @@ export const BuildModal: React.FC<BuildModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleDownloadFakeApk = () => {
-    const dummyBlob = new Blob(
-      [
-        `PK\x03\x04AndroidManifest.xml\x00\x00\x00\x00classes.dex\x00resources.arsc\x00Built by Android Code Studio Mobile\nPackage: ${packageName}\nProject: ${projectName}`,
-      ],
-      { type: 'application/vnd.android.package-archive' }
-    );
-    const url = URL.createObjectURL(dummyBlob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${projectName}-debug.apk`;
-    a.click();
-    URL.revokeObjectURL(url);
+  const handleDownloadRealApk = async () => {
+    try {
+      setDownloading(true);
+      await downloadApkFile(project);
+      setDownloading(false);
+    } catch (e) {
+      console.error('Failed to generate APK', e);
+      setDownloading(false);
+    }
   };
 
   return (
@@ -202,11 +201,12 @@ export const BuildModal: React.FC<BuildModalProps> = ({
             {stage === 'success' && (
               <>
                 <button
-                  onClick={handleDownloadFakeApk}
-                  className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-slate-200 text-xs font-medium flex items-center gap-1 transition-colors"
+                  onClick={handleDownloadRealApk}
+                  disabled={downloading}
+                  className="px-3.5 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center gap-1.5 transition-colors active:scale-95"
                 >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Download</span>
+                  <Download className={`w-3.5 h-3.5 ${downloading ? 'animate-bounce' : ''}`} />
+                  <span>{downloading ? 'Packaging...' : 'Download APK'}</span>
                 </button>
                 <button
                   onClick={() => {

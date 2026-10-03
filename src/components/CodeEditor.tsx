@@ -123,16 +123,21 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
                 <span className={`text-[9px] px-1 py-0.2 rounded border ${badge.color}`}>
                   {badge.label}
                 </span>
-                <span className="truncate max-w-[130px]">{file.name}</span>
+                <span className="truncate max-w-[120px]">{file.name}</span>
                 <button
                   type="button"
+                  title="Close file"
                   onClick={(e) => {
                     e.stopPropagation();
                     onCloseFile(file.id);
                   }}
-                  className="opacity-0 group-hover:opacity-100 hover:text-red-400 p-0.5 rounded transition-opacity"
+                  className={`p-1 rounded-md transition-colors flex items-center justify-center ${
+                    isActive
+                      ? 'text-slate-300 hover:bg-white/10 hover:text-red-400'
+                      : 'text-slate-500 hover:bg-white/10 hover:text-slate-200'
+                  }`}
                 >
-                  <X className="w-3 h-3" />
+                  <X className="w-3.5 h-3.5" />
                 </button>
               </div>
             );
@@ -141,6 +146,21 @@ export const CodeEditor: React.FC<CodeEditorProps> = ({
 
         {/* Quick Toolbar Controls */}
         <div className="flex items-center gap-1 shrink-0">
+          {openFiles.length > 1 && (
+            <button
+              type="button"
+              onClick={() => {
+                openFiles.forEach((f) => {
+                  if (f.id !== activeFile.id) onCloseFile(f.id);
+                });
+              }}
+              title="Close other tabs"
+              className="text-[10px] px-1.5 py-1 rounded hover:bg-white/10 text-slate-400 hover:text-white"
+            >
+              Close Others
+            </button>
+          )}
+
           <button
             type="button"
             onClick={() => setShowSearch(!showSearch)}
