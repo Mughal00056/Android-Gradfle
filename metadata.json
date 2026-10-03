@@ -1,0 +1,6 @@
+{
+  "name": "Android Code Studio Mobile",
+  "description": "Mobile Android Studio IDE with live interactive XML, Compose, Flutter & React preview, Gradle 8.13 builder, and terminal.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
