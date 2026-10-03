@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { 
   INITIAL_PROJECTS, DEFAULT_SDK_CONFIG 
 } from './constants/defaultProjects';
+import { getTemplateFiles } from './constants/templateDirectories';
 import { Project, ProjectFile, SdkConfig, ViewMode } from './types';
 import { 
   findFileById, findFileByPath, updateFileContent, 
@@ -229,19 +230,27 @@ cmake.dir=${updated.cmakeDir}`;
   // Create new project from template
   const handleCreateProject = (data: Partial<Project>) => {
     const newProjId = `project-${Date.now()}`;
+    const name = data.name || 'NewProject';
+    const packageName = data.packageName || 'com.example.app';
+    const type = data.type || 'native_kotlin';
+    const useKotlinDsl = !!data.useKotlinDsl;
+
+    // Generate distinct directory tree specifically tailored to this template!
+    const templateData = getTemplateFiles(type, name, packageName, useKotlinDsl);
+
     const newProj: Project = {
       id: newProjId,
-      name: data.name || 'NewProject',
-      packageName: data.packageName || 'com.example.app',
-      type: data.type || 'native_kotlin',
+      name,
+      packageName,
+      type,
       language: data.language || 'Kotlin',
       minSdk: data.minSdk || 24,
       targetSdk: 35,
       compileSdk: 35,
-      useKotlinDsl: !!data.useKotlinDsl,
-      activeFileId: 'file-activity-main-xml',
-      openFileIds: ['file-activity-main-xml', 'file-main-activity-kt'],
-      files: INITIAL_PROJECTS[0].files, // clone base structure
+      useKotlinDsl,
+      activeFileId: templateData.activeFileId,
+      openFileIds: templateData.openFileIds,
+      files: templateData.files,
     };
 
     setProjects([...projects, newProj]);
@@ -389,8 +398,7 @@ cmake.dir=${updated.cmakeDir}`;
       <ApkInstallerModal
         isOpen={showInstallerModal}
         onClose={() => setShowInstallerModal(false)}
-        appName={currentProject.name}
-        packageName={currentProject.packageName}
+        project={currentProject}
         onOpenApp={() => setViewMode('preview')}
       />
 

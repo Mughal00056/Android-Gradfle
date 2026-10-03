@@ -59,6 +59,33 @@ export const VirtualKeyboardBar: React.FC<VirtualKeyboardBarProps> = ({
         </button>
       )}
 
+      <button
+        type="button"
+        onClick={() => onInsert('()')}
+        title="Parentheses"
+        className="h-7 px-2 rounded-md bg-[#252833] hover:bg-[#323644] text-sky-400 font-mono text-xs flex items-center justify-center shrink-0"
+      >
+        ()
+      </button>
+
+      <button
+        type="button"
+        onClick={() => onInsert('{}')}
+        title="Curly Braces"
+        className="h-7 px-2 rounded-md bg-[#252833] hover:bg-[#323644] text-emerald-400 font-mono text-xs flex items-center justify-center shrink-0"
+      >
+        &#123;&#125;
+      </button>
+
+      <button
+        type="button"
+        onClick={() => onInsert('""')}
+        title="Double Quotes"
+        className="h-7 px-2 rounded-md bg-[#252833] hover:bg-[#323644] text-amber-400 font-mono text-xs flex items-center justify-center shrink-0"
+      >
+        ""
+      </button>
+
       <div className="w-[1px] h-5 bg-white/10 mx-0.5" />
 
       {quickKeys.map((k) => (
